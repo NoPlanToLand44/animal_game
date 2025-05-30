@@ -34,7 +34,7 @@ class World():
 
     def _get_grid_dimentions(self):
         # we put a 30 squares limit so the world doesnt get too big
-        while not self.rows or self.cols:
+        while not ( self.rows and self.cols ):
             try:
                 self.rows = int(input("Enter the number of rows of the world: "))
                 self.cols = int(input('Enter the number of the cols of the world: '))
@@ -52,18 +52,24 @@ class World():
                 
     
     def _get_population_metrics(self):
+        
         # making sure we have less animals than there are grids on the map 
-        try:
-            self.initial_herb_population = int(input("Enter the number of herbevores in the world: "))
-            self.initial_carn_population = int(input('Enter the number of carnicovers in the world: '))
-            if self.initial_herb_population + self.initial_carn_population > (self.rows * self.cols) : 
-                console.print('[red]Dont put more animals than there are squares on the map!!! [/red]')
-                self._get_population_metrics()
-            else:
-                return self.initial_herb_population, self.initial_carn_population
-        except ValueError: 
-            console.print('[red] Pls input valid numbers! [/red]')
-            self._get_population_metrics()
+        while not (self.initial_carn_population and self.initial_herb_population):
+            try:
+                self.initial_herb_population = int(input("Enter the number of herbevores in the world: "))
+                self.initial_carn_population = int(input('Enter the number of carnicovers in the world: '))
+                if self.initial_herb_population + self.initial_carn_population > (self.rows * self.cols) : 
+                    console.print('[red]Dont put more animals than there are squares on the map!!! [/red]')
+                    self.initial_herb_population = 0
+                    self.initial_carn_population = 0 
+                elif self.initial_herb_population == 0 or self.initial_carn_population == 0:
+                    console.print('[red] Dont make the pop metrics 0 ,daimn it!!! !!!! we cant have a simulation with 0 .... [/red]')
+                    continue
+                else:
+                    return self.initial_herb_population, self.initial_carn_population
+            except ValueError: 
+                console.print('[red] Pls input valid numbers! [/red]')
+                
 
 
     def _create_game_grid(self, rows,cols):
