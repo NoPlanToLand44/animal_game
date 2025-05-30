@@ -34,17 +34,22 @@ class World():
 
     def _get_grid_dimentions(self):
         # we put a 30 squares limit so the world doesnt get too big
-        try:
-            self.rows = int(input("Enter the number of rows of the world: "))
-            self.cols = int(input('Enter the number of the cols of the world: '))
-            if self.rows > 30 or self.cols > 30 : 
-                console.print('Pls dont make the map too big')
-                self._get_grid_dimentions()
-            else:
-                return self.rows, self.cols
-        except ValueError: 
-            console.print('[red] Pls input valid numbers! [/red]')
-            self._get_grid_dimentions()
+        while not self.rows or self.cols:
+            try:
+                self.rows = int(input("Enter the number of rows of the world: "))
+                self.cols = int(input('Enter the number of the cols of the world: '))
+                if self.rows > 30 or self.cols > 30  or self.rows < 0 or self.cols < 0: 
+                    console.print('Pls dont make the map too big')
+                    self.rows = 0 
+                    self.cols = 0
+                elif self.rows == 0 or self.cols == 0 : 
+                    console.print('[red] Dont make it 0!!!! we cant have a map with 0 .... [/red]')
+                    continue
+                else:
+                    return self.rows, self.cols
+            except ValueError: 
+                console.print('[red] Pls input valid int numbers! between 1 and 30 !!! [/red]')
+                
     
     def _get_population_metrics(self):
         # making sure we have less animals than there are grids on the map 
