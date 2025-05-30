@@ -1,6 +1,7 @@
 import numpy as np
 from rich.console import Console
 from rich.table import Table
+import random
 console = Console()
 
 class World():
@@ -102,29 +103,63 @@ class World():
         self.graphics = self._map_grid_to_graphics(self.grid_array, self.grid_graphics_map)
         return self.graphics
 
+    def has_herbavores(self):
+        pass
+
+    def move_all_animals(self):
+        pass
+
+    def resolve_encounters(self): 
+        pass
+
+    def display_state(self):
+        pass
+
 
 
 class Animal:
 
     def __init__(self):
         self.name = ""
+        self.number = int
         self.symbol = ""
         self.xy_position = []
-        self.unspawned_population = 0
-        self.current_population = 0
-    
-    def get_location_from_world(self):
-        pass
 
-    def move_on_grid(self):
+    def get_location(self, grid, number_code):
+        # get the coordinates of all carnivores and shuffle their positions to avoid moving bias 
+        position = list((zip(*np.where((grid == number_code )))))
+        np.random.shuffle(position)
+        return position
+    
+
+
+    def move(self, grid, number_code):
+        rows, cols = grid.shape
+        positions = self.get_location(grid, self.number)
+        for r, c in positions:
+            # choose a random direction : 
+            dr, dc = random.choice([(0,-1), (-1,0), (0,1), (1,0)])
+            nr , nc = r + dr , c + dc
+            # stay in the map and move only if the dest is empty
+            if 0 <= nr < rows and  0 <= nc  < cols and grid[nr, nc] == 0:
+                grid[nr, nc] = number_code
+                grid[r,c] = 0
+        return grid
+
+    def handle_collisions(self):
         pass
 
 
 
 class Carnavore(Animal):
+
     def __init__(self):
-        self.name = ""
+        super().__init__()
+        self.number = 1
+        self.name = 'wolf'
         self.symbol = "🐺"
+        self.current_population = 0
+
     
 
     def hunt(self):
@@ -135,8 +170,11 @@ class Carnavore(Animal):
 class Herbavore(Animal):
     
     def __init__(self):
-        self.name = ""
+        super().__init__()
+        self.number = 2
+        self.name = "rabbit"
         self.symbol = "🐰"
+        self.current_population = 0
     
     def hunted(self):
         pass
@@ -146,5 +184,6 @@ class Herbavore(Animal):
 
 
 world = World()
-
-
+wolf = Carnavore()
+console.print(world.grid_array)
+console.print(wolf.move(world.grid_array, wolf.number))
