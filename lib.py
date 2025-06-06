@@ -2,6 +2,8 @@ import numpy as np
 from rich.console import Console
 from rich.table import Table
 import random
+from collections import Counter
+
 console = Console()
 
 class World():
@@ -12,6 +14,8 @@ class World():
         self.cols = 0
         self.initial_herb_population = 0
         self.initial_carn_population = 0
+        current_carn_population = 0
+        current_herb_population = 0
         # we ask the user to define the dimentions of the map 
         self._get_grid_dimentions()
         populated_grid = self._create_game_grid(self.rows, self.cols)
@@ -83,7 +87,7 @@ class World():
             table.add_row(*row_data)
         return table
     
-    def _map_grid_to_graphics(self, grid_array, the_map:dict ):
+    def map_grid_to_graphics(self, grid_array, the_map:dict ):
 
         """
         Mapping the graphics to the logic array that we made
@@ -100,7 +104,7 @@ class World():
         self.grid_array = np.array(values).reshape((self.rows, self.cols))
 
 
-        self.graphics = self._map_grid_to_graphics(self.grid_array, self.grid_graphics_map)
+        self.graphics = self.map_grid_to_graphics(self.grid_array, self.grid_graphics_map)
         return self.graphics
 
     def has_herbavores(self):
@@ -109,8 +113,31 @@ class World():
     def move_all_animals(self):
         pass
 
-    def resolve_encounters(self): 
-        pass
+    def next_grid_positions(self,initial_grid:np.ndarray, carn_moves:np.ndarray, herb_moves:np.ndarray): 
+        ### fix 
+        new_grid = np.zeros_like(initial_grid)
+        old_grid = initial_grid.copy()
+        carn_xy_coordinates = list(zip(*np.where((carn_moves ==  1))))
+        herb_xy_coordinates = list(zip(*np.where((herb_moves ==  2 ))))
+        carn_set = set(carn_xy_coordinates)
+        herb_set = set(herb_xy_coordinates)
+        overlap_xy = carn_set & herb_set
+        carn_set = carn_set - overlap_xy
+        herb_set = herb_set - overlap_xy
+        for row , col in carn_set:
+            new_grid[row, col] = 1
+        for row , col in herb_set:
+            new_grid[row, col] = 2
+        for row , col in overlap_xy:
+            new_grid[row, col] = 3
+
+        self.current_carn_population = np.count_nonzero(new_grid == 1)
+        self.current_herb_population = np.count_nonzero(new_grid == 2)
+        
+        self.grid_array = new_grid
+        return self.grid_array
+    
+
 
     def display_state(self):
         pass
@@ -124,9 +151,10 @@ class Animal:
         self.number = int
         self.symbol = ""
         self.xy_position = []
+        self.current_population = 0
 
     def get_location(self, grid, number_code):
-        # get the coordinates of all carnivores and shuffle their positions to avoid moving bias 
+        # get the coordinates of all carns  and shuffle their positions to avoid moving bias 
         position = list((zip(*np.where((grid == number_code )))))
         np.random.shuffle(position)
         return position
@@ -134,19 +162,20 @@ class Animal:
 
 
     def move(self, grid, number_code):
+        # returns a new grid with all the positions 
+        grid = grid.copy()
         rows, cols = grid.shape
         positions = self.get_location(grid, self.number)
         for r, c in positions:
             # choose a random direction : 
             dr, dc = random.choice([(0,-1), (-1,0), (0,1), (1,0)])
             nr , nc = r + dr , c + dc
-            # stay in the map and move only if the dest is empty
-            if 0 <= nr < rows and  0 <= nc  < cols and grid[nr, nc] == 0:
+            if 0 <= nr < rows and  0 <= nc  < cols and grid[nr,nc] != number_code:
                 grid[nr, nc] = number_code
                 grid[r,c] = 0
         return grid
 
-    def handle_collisions(self):
+    def _handle_collisions(self, carn_grid, herb_grid):
         pass
 
 
@@ -158,7 +187,6 @@ class Carnavore(Animal):
         self.number = 1
         self.name = 'wolf'
         self.symbol = "🐺"
-        self.current_population = 0
 
     
 
@@ -174,7 +202,6 @@ class Herbavore(Animal):
         self.number = 2
         self.name = "rabbit"
         self.symbol = "🐰"
-        self.current_population = 0
     
     def hunted(self):
         pass
@@ -183,7 +210,20 @@ class Herbavore(Animal):
 
 
 
+
 world = World()
-wolf = Carnavore()
+wolfs = Carnavore()
+wolfs.current_population = world.initial_carn_population
+rabbits = Herbavore()
+rabbits.current_population = world.initial_herb_population
 console.print(world.grid_array)
-console.print(wolf.move(world.grid_array, wolf.number))
+
+
+
+while rabbits.current_population > 0:
+    carn_moves = (wolfs.move(world.grid_array, wolfs.number))
+    herb_moves = (rabbits.move(world.grid_array,rabbits.number))
+    new_grid = world.next_grid_positions(world.grid_array, carn_moves , herb_moves)
+    wolfs.current_population = world.current_carn_population
+    rabbits.current_population = world.current_herb_population
+    world.map_grid_to_graphics(new_grid, world.grid_graphics_map)
