@@ -13,7 +13,7 @@ class World():
         self.rows = 0
         self.cols = 0
         self.initial_herb_population = 0
-        self.initial_carn_population = 0
+        self.initial_carn_population =s 0
         current_carn_population = 0
         current_herb_population = 0
         # we ask the user to define the dimentions of the map 
@@ -26,7 +26,7 @@ class World():
         console.print('Randomizing the positions of each animal:  ')
         # creating the Null world with zeroes , so its easier to work with it and after that well convert it to graphics
         self.grid_array = np.ndarray((self.rows * self.cols))
-        # setting the conversion map of the array_world to graphics world  
+        # setting the conversion map of the array_world to graphics world   
         self.grid_graphics_map = {
         0: "⬜",
         1: "🐺",
