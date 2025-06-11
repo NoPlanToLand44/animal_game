@@ -49,13 +49,17 @@ def create_entity(entity_count:int,animal_class):
 def randomize_positions(grid, *animals_lists):
     for animal_list in animals_lists:
         for animal in animal_list:
-            empty_positions = np.argwhere(grid == 0)
-            if len(empty_positions) == 0:
-                raise ValueError('No empty positions avalable for animal placement')
-            
-            random_index = np.random.randint(0, len(empty_positions))
-            selected_position = empty_positions[random_index]
+            selected_position = choose_random_free_cell(grid)
             animal.x = selected_position[0]
             animal.y = selected_position[1]
             grid[animal.x][animal.y] = animal.code
     return animals_lists
+
+
+def choose_random_free_cell(grid):
+    empty_positions = np.argwhere(grid == 0)
+    if len(empty_positions) == 0:
+        raise ValueError('No empty positions avalable for animal placement')
+    random_index = np.random.randint(0, len(empty_positions))
+    selected_position = empty_positions[random_index]
+    return selected_position
