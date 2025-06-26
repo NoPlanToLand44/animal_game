@@ -1,8 +1,0 @@
-<<<<<<< HEAD
-/.venv
-=======
-lib.py
-/.venv
-/__pycache__
-na koceto geniq draskanicite .cs
->>>>>>> 1804cfd (fixes some abstractions and made a new architeccture for my classes)
